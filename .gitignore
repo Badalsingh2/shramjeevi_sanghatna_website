@@ -1,0 +1,23 @@
+# Python backend
+backend/myenv/
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+
+# Uploads (optional — if generated files)
+backend/uploads/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
