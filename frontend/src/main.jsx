@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import "./style.css";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "https://shramjeevi-sanghatna-website.onrender.com";
 
 const BAR_COLOR = "#ed1c24";
 
