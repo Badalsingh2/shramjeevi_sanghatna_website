@@ -859,6 +859,112 @@ function WorkerDashboard({ user, logout, t, lang, setLang, onOpenPasswordModal }
 
 // ─── ADMIN DASHBOARD ─────────────────────────────────────────────────────────
 
+function MarathiNamesPanel({ user, districts, onRefresh }) {
+  const [allUsers, setAllUsers] = useState([]);
+  const [savingAll, setSavingAll] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+  const [drafts, setDrafts] = useState({});
+  const [districtDrafts, setDistrictDrafts] = useState({});
+
+  const loadUsers = async () => {
+    try {
+      const res = await axios.get(`${API}/users`, { params: { admin_id: user.id } });
+      setAllUsers(res.data);
+      const d = {};
+      res.data.forEach(u => { d[u.id] = u.name_mr || ""; });
+      setDrafts(d);
+    } catch { setAllUsers([]); }
+  };
+
+  useEffect(() => {
+    loadUsers();
+    const d = {};
+    districts.forEach(dist => { d[dist.id] = dist.name_mr || ""; });
+    setDistrictDrafts(d);
+  }, [districts]);
+
+  // ✅ Save ALL names in one request
+  const saveAll = async () => {
+    setSavingAll(true);
+    setSaveMsg("");
+    try {
+      const res = await axios.post(`${API}/bulk-names`, {
+        admin_id: user.id,
+        users: drafts,
+        districts: districtDrafts,
+      });
+      setSaveMsg("✅ " + res.data.message);
+      await loadUsers();
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      setSaveMsg("❌ Save failed: " + (err?.response?.data?.detail || err.message));
+    }
+    setSavingAll(false);
+  };
+
+  const activists = allUsers.filter(u => u.role === "activist");
+  const missingCount = activists.filter(u => !drafts[u.id]).length
+    + districts.filter(d => !districtDrafts[d.id]).length;
+
+  return (
+    <div className="panel">
+      <div className="marathi-panel-header">
+        <div>
+          <h2>🇮🇳 मराठी नावे सेट करा — Set Marathi Names</h2>
+          <p className="score-note">
+            सर्व नावे भरा आणि खाली एकाच "सर्व जतन करा" बटणावर क्लिक करा.<br/>
+            Fill all names below, then click <b>Save All at Once</b>. ⚠️ = name missing ({missingCount} remaining)
+          </p>
+        </div>
+        <div className="save-all-box">
+          <button className="btn-save-all" onClick={saveAll} disabled={savingAll}>
+            {savingAll ? "⏳ Saving..." : "💾 सर्व जतन करा — Save All"}
+          </button>
+          {saveMsg && <p className={saveMsg.startsWith("✅") ? "success" : "errorText"} style={{marginTop:"0.4rem", fontSize:"0.82rem"}}>{saveMsg}</p>}
+        </div>
+      </div>
+
+      {/* Districts */}
+      <h3 style={{margin:"1.25rem 0 0.75rem", color:"var(--primary)"}}>जिल्हे — Districts</h3>
+      <div className="marathi-names-grid">
+        {districts.map(d => (
+          <div key={d.id} className={`marathi-row ${!districtDrafts[d.id] ? "missing" : ""}`}>
+            <span className="eng-name">{d.name} {!districtDrafts[d.id] && "⚠️"}</span>
+            <input
+              className="marathi-input"
+              placeholder="मराठी नाव टाका..."
+              value={districtDrafts[d.id] || ""}
+              onChange={e => setDistrictDrafts(p => ({ ...p, [d.id]: e.target.value }))}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Workers */}
+      <h3 style={{margin:"1.5rem 0 0.75rem", color:"var(--primary)"}}>कार्यकर्ते — Activists</h3>
+      <div className="marathi-names-grid">
+        {activists.map(u => (
+          <div key={u.id} className={`marathi-row ${!drafts[u.id] ? "missing" : ""}`}>
+            <span className="eng-name">{u.name} <small className="muted">({u.district_name})</small> {!drafts[u.id] && "⚠️"}</span>
+            <input
+              className="marathi-input"
+              placeholder="मराठी नाव टाका..."
+              value={drafts[u.id] || ""}
+              onChange={e => setDrafts(p => ({ ...p, [u.id]: e.target.value }))}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Save All button at bottom too */}
+      <button className="btn-save-all" style={{marginTop:"1.5rem", width:"100%"}} onClick={saveAll} disabled={savingAll}>
+        {savingAll ? "⏳ Saving..." : "💾 सर्व जतन करा — Save All at Once"}
+      </button>
+      {saveMsg && <p className={saveMsg.startsWith("✅") ? "success" : "errorText"} style={{marginTop:"0.5rem", textAlign:"center"}}>{saveMsg}</p>}
+    </div>
+  );
+}
+
 function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChanged, onOpenPasswordModal }) {
   const [data, setData] = useState(null);
   const [districts, setDistricts] = useState([]);
@@ -869,10 +975,12 @@ function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChange
   const [activeChart, setActiveChart] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
-  useEffect(() => {
+  const loadAll = () => {
     axios.get(`${API}/dashboard`).then(r => setData(r.data));
     axios.get(`${API}/districts`).then(r => setDistricts(r.data));
-  }, []);
+  };
+
+  useEffect(() => { loadAll(); }, []);
 
   const openDistrict = (d) => {
     const dd = data.districts.find(x => x.id === d.id);
@@ -901,6 +1009,9 @@ function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChange
     <>
       <Header title={t.adminPanel} logout={logout} t={t} lang={lang} setLang={setLang} onOpenPasswordModal={onOpenPasswordModal}/>
       <section className="page">
+        {/* Marathi Names Manager */}
+        <MarathiNamesPanel user={user} districts={districts} onRefresh={loadAll}/>
+
         {/* Events management */}
         <div className="admin-event-grid">
           <EventForm user={user} t={t} onEventsChanged={onEventsChanged}/>

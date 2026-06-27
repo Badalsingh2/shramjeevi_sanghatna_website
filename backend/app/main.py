@@ -190,6 +190,93 @@ class EventStatusRequest(BaseModel):
     is_latest: Optional[bool] = None
     is_outdated: Optional[bool] = None
 
+class UpdateMarathiNameRequest(BaseModel):
+    admin_id: int
+    name_mr: str
+
+@app.get("/users")
+def get_all_users(admin_id: int):
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can view all users")
+    users = db.query(User).all()
+    result = [{
+        "id": u.id,
+        "name": u.name,
+        "name_mr": u.name_mr,
+        "phone": u.phone,
+        "role": u.role,
+        "district_id": u.district_id,
+        "district_name": u.district.name if u.district else None,
+    } for u in users]
+    db.close()
+    return result
+
+@app.patch("/users/{user_id}/name_mr")
+def update_user_marathi_name(user_id: int, data: UpdateMarathiNameRequest):
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == data.admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can update names")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        db.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    user.name_mr = data.name_mr
+    db.commit()
+    db.close()
+    return {"message": "Marathi name updated", "name_mr": data.name_mr}
+
+@app.patch("/districts/{district_id}/name_mr")
+def update_district_marathi_name(district_id: int, data: UpdateMarathiNameRequest):
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == data.admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can update names")
+    district = db.query(District).filter(District.id == district_id).first()
+    if not district:
+        db.close()
+        raise HTTPException(status_code=404, detail="District not found")
+    district.name_mr = data.name_mr
+    db.commit()
+    db.close()
+    return {"message": "District Marathi name updated", "name_mr": data.name_mr}
+
+class BulkNamesRequest(BaseModel):
+    admin_id: int
+    users: dict  # {user_id_str: name_mr}
+    districts: dict  # {district_id_str: name_mr}
+
+@app.post("/bulk-names")
+def bulk_update_marathi_names(data: BulkNamesRequest):
+    """Save ALL Marathi names for users and districts in one request."""
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == data.admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can update names")
+
+    updated_users = 0
+    for user_id_str, name_mr in data.users.items():
+        u = db.query(User).filter(User.id == int(user_id_str)).first()
+        if u:
+            u.name_mr = name_mr.strip() or None
+            updated_users += 1
+
+    updated_districts = 0
+    for district_id_str, name_mr in data.districts.items():
+        d = db.query(District).filter(District.id == int(district_id_str)).first()
+        if d:
+            d.name_mr = name_mr.strip() or None
+            updated_districts += 1
+
+    db.commit()
+    db.close()
+    return {"message": f"Saved {updated_users} users and {updated_districts} districts"}
 @app.post("/login")
 def login(data: LoginRequest):
     db = SessionLocal()

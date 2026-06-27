@@ -1007,3 +1007,91 @@ td:last-child  { border-radius: 0 var(--r) var(--r) 0; }
   background: rgba(245,158,11,0.28);
   transform: translateY(-1px);
 }
+
+/* ── Marathi Names Panel ──────────────────────────────────── */
+.marathi-names-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.marathi-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.save-all-box {
+  flex-shrink: 0;
+}
+.btn-save-all {
+  padding: 0.65rem 1.6rem;
+  border-radius: var(--r-pill, 999px);
+  background: linear-gradient(135deg, var(--primary), #a01015);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(215,25,32,0.3);
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-save-all:hover:not(:disabled) { opacity: 0.88; transform: translateY(-2px); }
+.btn-save-all:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.marathi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  transition: border-color 0.2s;
+}
+.marathi-row.missing {
+  border-color: rgba(245,158,11,0.35);
+  background: rgba(245,158,11,0.06);
+}
+.eng-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.marathi-input {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.marathi-input:focus {
+  border-color: var(--primary);
+}
+.btn-save-mr {
+  padding: 0.4rem 1rem;
+  border-radius: var(--r-pill, 999px);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-save-mr:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+.btn-save-mr:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .marathi-row { grid-template-columns: 1fr; gap: 0.4rem; }
+  .marathi-panel-header { flex-direction: column; }
+  .btn-save-all { width: 100%; }
+}
