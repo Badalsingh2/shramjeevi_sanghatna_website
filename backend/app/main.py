@@ -51,14 +51,25 @@ def store_upload(upload: UploadFile, filename: str):
             supabase.storage.from_("reports").upload(
                 file=f,
                 path=filename,
-                file_options={"content-type": upload.content_type}
+                file_options={
+                    "content-type": upload.content_type or "image/jpeg",
+                    "upsert": "true",   # overwrite if file already exists
+                }
             )
-        public_url = supabase.storage.from_("reports").get_public_url(filename)
+        # supabase-py v1 returns a string; v2 returns a dict {'publicUrl': '...'}
+        raw_url = supabase.storage.from_("reports").get_public_url(filename)
+        if isinstance(raw_url, dict):
+            public_url = raw_url.get("publicUrl") or raw_url.get("publicURL") or local_url
+        else:
+            public_url = str(raw_url)
+        print(f"Supabase upload OK: {public_url}")
         if os.path.exists(path):
             os.remove(path)
         return public_url
     except Exception as exc:
-        print(f"Supabase upload failed, using local upload: {exc}")
+        import traceback
+        print(f"Supabase upload FAILED for {filename}: {exc}")
+        traceback.print_exc()
         return local_url
 
 class District(Base):
@@ -129,6 +140,22 @@ def ensure_event_columns():
                 conn.execute(text(f"ALTER TABLE events ADD COLUMN {column_name} {definition}"))
 
 ensure_event_columns()
+
+# ── Supabase startup check ──────────────────────────────────────────────────
+if supabase:
+    try:
+        buckets = supabase.storage.list_buckets()
+        bucket_names = [b.name for b in buckets]
+        print(f"[STARTUP] Supabase connected. Buckets available: {bucket_names}")
+        if "reports" not in bucket_names:
+            print("[STARTUP] WARNING: 'reports' bucket NOT FOUND in Supabase Storage!")
+        else:
+            print("[STARTUP] 'reports' bucket found OK.")
+    except Exception as e:
+        print(f"[STARTUP] Supabase storage check failed: {e}")
+else:
+    print("[STARTUP] Supabase NOT configured – images will be stored locally (will break on Render).")
+
 
 class LoginRequest(BaseModel):
     phone: str
