@@ -1139,3 +1139,204 @@ td:last-child  { border-radius: 0 var(--r) var(--r) 0; }
 .marathi-toggle-btn:hover { background: rgba(255,255,255,0.04); }
 .toggle-arrow { font-size: 0.75rem; color: var(--primary); margin-left: 0.5rem; }
 .marathi-toggle-panel > div { padding: 0 1.5rem 1.5rem; }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE-FIRST COMPREHENSIVE FIXES
+   Priority: phones are primary device for this app
+════════════════════════════════════════════════════════════ */
+
+/* ── 1. Landing nav: prevent login btn + hamburger overlap ── */
+.landing-nav {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.nav-brand {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.nav-brand-text b,
+.nav-brand-text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  display: block;
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+/* On very small phones hide the login text, show only icon */
+@media (max-width: 360px) {
+  .btn-login-nav span { display: none; }
+  .btn-login-nav { padding: 0.6rem 0.85rem; min-width: 46px; justify-content: center; }
+}
+
+/* ── 2. Hero layout: stack cleanly, prevent overflow ── */
+.hero-left { min-width: 0; overflow: hidden; }
+.hero-title { word-break: break-word; hyphens: auto; }
+.hero-stats { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+
+/* ── 3. District performance bar chart ── */
+.chart-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r);
+}
+.chart-container .recharts-wrapper {
+  min-width: 300px;
+}
+
+/* District overview bar chart — shorter on mobile, allow scroll */
+@media (max-width: 767px) {
+  .chart-outer-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r);
+    padding-bottom: 4px;
+  }
+  /* Reduce panel padding on mobile so charts have more room */
+  .panel { padding: 0.85rem 0.75rem; }
+}
+
+/* ── 4. Vertical bar chart (activist performance) ── */
+/* Recharts vertical chart needs dynamic left margin on mobile */
+.chart-wrap-vertical {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* ── 5. Pie chart: shrink outerRadius on mobile ── */
+@media (max-width: 480px) {
+  .recharts-pie { transform-origin: center; }
+  /* hide pie labels on very small screens, use tooltip instead */
+  .recharts-label { display: none; }
+}
+
+/* ── 6. Table: show scroll hint on mobile ── */
+.table-wrap {
+  position: relative;
+}
+.table-wrap::after {
+  content: "← scroll →";
+  display: block;
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--muted);
+  padding: 0.35rem 0;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+@media (min-width: 768px) {
+  .table-wrap::after { display: none; }
+}
+
+/* ── 7. Worker profile grid — single col on tiny phones ── */
+@media (max-width: 400px) {
+  .worker-profile-grid { grid-template-columns: 1fr; }
+}
+
+/* ── 8. Date filter row — full width inputs on mobile ── */
+.date-filter-row input[type="date"] {
+  width: 100% !important;
+}
+@media (min-width: 640px) {
+  .date-filter-row input[type="date"] { width: auto !important; }
+}
+
+/* ── 9. Chart btn row — full width stacked on mobile ── */
+.btn-chart { width: 100%; }
+@media (min-width: 640px) { .btn-chart { width: auto; } }
+
+/* ── 10. Admin event grid — single column always on mobile ── */
+@media (max-width: 899px) {
+  .admin-event-grid { display: flex; flex-direction: column; }
+}
+
+/* ── 11. Stats grid — always 2-col on mobile ── */
+@media (max-width: 380px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ── 12. District cards — 2 per row minimum ── */
+@media (max-width: 320px) {
+  .district-cards { grid-template-columns: 1fr; }
+}
+
+/* ── 13. Event slider track height — auto on mobile ── */
+@media (max-width: 767px) {
+  .slider-track { min-height: auto; }
+  .slide { position: relative; opacity: 1; transform: none; filter: none;
+           pointer-events: auto; display: none; }
+  .slide.active { display: flex; }
+}
+
+/* ── 14. Modal — full screen on mobile ── */
+@media (max-width: 480px) {
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal-box {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: calc(1.6rem + var(--safe-bottom));
+  }
+}
+
+/* ── 15. Marathi panel rows — single col on mobile ── */
+@media (max-width: 500px) {
+  .marathi-row { grid-template-columns: 1fr; }
+  .marathi-toggle-btn { font-size: 0.82rem; padding: 0.9rem 1rem; }
+}
+
+/* ── 16. Event status controls — wrap nicely ── */
+.event-status-box { flex-wrap: wrap; }
+.fix-image-btn, .btn-delete-event { flex-shrink: 0; }
+
+/* ── 17. Topbar on mobile — tighter layout ── */
+@media (max-width: 400px) {
+  .topbar { gap: 0.4rem; padding: 0.6rem 0.7rem; }
+  .topbar-title { font-size: 0.8rem; }
+}
+
+/* ── 18. Page padding — extra bottom for mobile nav gestures ── */
+@media (max-width: 767px) {
+  .page { padding-bottom: calc(5rem + var(--safe-bottom)); }
+  .landing { padding: 0.5rem 0.5rem calc(3rem + var(--safe-bottom)); }
+}
+
+/* ── 19. Masthead nav — clip brand text on tiny phones ── */
+@media (max-width: 380px) {
+  .nav-brand-text b { max-width: 130px; }
+  .nav-brand-text span { display: none; }
+}
+
+/* ── 20. Login drawer — full screen always on mobile ── */
+@media (max-width: 519px) {
+  .login-drawer { width: 100vw; }
+}
+
+/* ── 21. Hero badges — smaller on mobile ── */
+@media (max-width: 400px) {
+  .badge-red, .badge-outline { font-size: 0.62rem; padding: 0.22rem 0.6rem; }
+}
+
+/* ── 22. Profile item font — readable on small screens ── */
+@media (max-width: 400px) {
+  .profile-item b { font-size: 0.8rem; word-break: break-all; }
+}
+
+/* ── 23. Score badge — don't let it wrap ── */
+.score-badge { white-space: nowrap; }
+
+/* ── 24. Fix Image / Delete buttons wrap in event card ── */
+.event-status-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
