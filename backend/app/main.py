@@ -479,7 +479,7 @@ def dashboard():
                 "worker_name": r.worker.name,
                 "district_name": r.district.name,
                 "category": r.category,
-                "image_urls": json.loads(r.image_urls) if r.image_urls else []
+                "images": json.loads(r.image_urls) if r.image_urls else []
             } for r in recent
         ]
     }
