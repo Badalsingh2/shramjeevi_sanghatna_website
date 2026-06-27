@@ -6,7 +6,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Date, Text, Forei
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import date
 from typing import List, Optional
-import shutil, os, uuid, json
+import os, uuid, json
+
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -37,40 +38,54 @@ app.add_middleware(
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-def store_upload(upload: UploadFile, filename: str):
-    path = os.path.join("uploads", filename)
-    with open(path, "wb") as buffer:
-        shutil.copyfileobj(upload.file, buffer)
-
-    local_url = f"/uploads/{filename}"
+def store_upload(upload: UploadFile, filename: str) -> str:
+    """
+    Upload a file to Supabase Storage and return its public URL.
+    Reads entirely into memory — no local disk writes.
+    Raises HTTPException(500) if Supabase is not configured or upload fails.
+    """
     if not supabase:
-        return local_url
+        raise HTTPException(
+            status_code=500,
+            detail="Image storage not configured. Set SUPABASE_URL and SUPABASE_KEY env vars."
+        )
+
+    # Read file bytes into memory
+    file_bytes = upload.file.read()
+    content_type = upload.content_type or "image/jpeg"
 
     try:
-        with open(path, "rb") as f:
-            supabase.storage.from_("reports").upload(
-                file=f,
-                path=filename,
-                file_options={
-                    "content-type": upload.content_type or "image/jpeg",
-                    "upsert": "true",   # overwrite if file already exists
-                }
-            )
-        # supabase-py v1 returns a string; v2 returns a dict {'publicUrl': '...'}
-        raw_url = supabase.storage.from_("reports").get_public_url(filename)
-        if isinstance(raw_url, dict):
-            public_url = raw_url.get("publicUrl") or raw_url.get("publicURL") or local_url
-        else:
-            public_url = str(raw_url)
-        print(f"Supabase upload OK: {public_url}")
-        if os.path.exists(path):
-            os.remove(path)
-        return public_url
+        supabase.storage.from_("reports").upload(
+            file=file_bytes,
+            path=filename,
+            file_options={
+                "content-type": content_type,
+                "upsert": "true",
+            }
+        )
     except Exception as exc:
         import traceback
-        print(f"Supabase upload FAILED for {filename}: {exc}")
         traceback.print_exc()
-        return local_url
+        raise HTTPException(
+            status_code=500,
+            detail=f"Supabase upload failed: {exc}"
+        )
+
+    # Build public URL (supabase-py v2 returns a plain string)
+    public_url = supabase.storage.from_("reports").get_public_url(filename)
+    if isinstance(public_url, dict):
+        public_url = public_url.get("publicUrl") or public_url.get("publicURL") or ""
+    public_url = str(public_url).strip()
+
+    if not public_url or not public_url.startswith("http"):
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not get public URL for {filename}. Is the 'reports' bucket set to Public in Supabase?"
+        )
+
+    print(f"[UPLOAD] OK → {public_url}")
+    return public_url
+
 
 class District(Base):
     __tablename__ = "districts"
