@@ -77,6 +77,9 @@ def store_upload(upload: UploadFile, filename: str) -> str:
         public_url = public_url.get("publicUrl") or public_url.get("publicURL") or ""
     public_url = str(public_url).strip()
 
+    # supabase-py sometimes appends a bare "?" — strip it so the URL is clean
+    public_url = public_url.rstrip("?").rstrip("&")
+
     if not public_url or not public_url.startswith("http"):
         raise HTTPException(
             status_code=500,
@@ -85,6 +88,7 @@ def store_upload(upload: UploadFile, filename: str) -> str:
 
     print(f"[UPLOAD] OK → {public_url}")
     return public_url
+
 
 
 class District(Base):
