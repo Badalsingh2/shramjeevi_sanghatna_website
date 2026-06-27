@@ -324,6 +324,34 @@ def get_admin_events():
     db.close()
     return result
 
+@app.put("/events/{event_id}/image")
+def update_event_image(
+    event_id: int,
+    admin_id: int = Form(...),
+    image: UploadFile = File(...)
+):
+    """Re-upload or replace the image for an existing event (fixes broken local /uploads/ paths)."""
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can update events")
+
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        db.close()
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    ext = os.path.splitext(image.filename)[1] or ".jpg"
+    filename = f"event-{uuid.uuid4()}{ext}"
+    image_url = store_upload(image, filename)
+
+    event.image_url = image_url
+    db.commit()
+    result = serialize_event(event)
+    db.close()
+    return result
+
 @app.patch("/events/{event_id}")
 def update_event_status(event_id: int, data: EventStatusRequest):
     db = SessionLocal()

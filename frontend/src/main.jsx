@@ -589,6 +589,26 @@ function EventStatusControls({ event, t, user, onEventsChanged }) {
     } catch { alert(t.updateFailed); }
   };
 
+  const fixImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("admin_id", user.id);
+    fd.append("image", file);
+    try {
+      await axios.put(`${API}/events/${event.id}/image`, fd);
+      onEventsChanged();
+      alert("✅ Image updated successfully!");
+    } catch (err) {
+      alert("❌ Failed to update image: " + (err?.response?.data?.detail || err.message));
+    }
+    e.target.value = "";
+  };
+
+  const isBrokenImage = event.image_url && (
+    event.image_url.startsWith("/uploads/") ||
+    event.image_url.startsWith("uploads/")
+  );
   const isVisible = event.is_latest && !event.is_outdated;
 
   return (
@@ -603,6 +623,12 @@ function EventStatusControls({ event, t, user, onEventsChanged }) {
       <label className="check-row">
         <input type="checkbox" checked={Boolean(event.is_outdated)} onChange={e => update({ is_outdated: e.target.checked })}/>
         {t.outdatedEvent}
+      </label>
+      {/* Fix broken local /uploads/ image — re-upload to Supabase */}
+      <label className="fix-image-btn" title={isBrokenImage ? "⚠️ Image is broken (local path). Click to re-upload." : "Replace image"}>
+        <Camera size={14}/>
+        {isBrokenImage ? " ⚠️ Fix Image" : " Replace Image"}
+        <input type="file" accept="image/*" style={{display:"none"}} onChange={fixImage}/>
       </label>
     </div>
   );

@@ -964,3 +964,46 @@ td:last-child  { border-radius: 0 var(--r) var(--r) 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── Fix Image Button ─────────────────────────────────────── */
+.event-status-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.status-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+.status-visible { background: rgba(22,163,74,0.2); color: #4ade80; border: 1px solid #16a34a; }
+.status-hidden  { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; }
+
+.fix-image-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--r-pill, 999px);
+  background: rgba(245,158,11,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.4);
+  transition: background 0.2s, transform 0.15s;
+  width: fit-content;
+  margin-top: 0.2rem;
+}
+.fix-image-btn:hover {
+  background: rgba(245,158,11,0.28);
+  transform: translateY(-1px);
+}
