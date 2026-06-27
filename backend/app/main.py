@@ -394,6 +394,22 @@ def create_event(
     db.close()
     return {"message": "Event added"}
 
+@app.delete("/events/{event_id}")
+def delete_event(event_id: int, data: EventStatusRequest):
+    db = SessionLocal()
+    admin = db.query(User).filter(User.id == data.admin_id, User.role == "admin").first()
+    if not admin:
+        db.close()
+        raise HTTPException(status_code=403, detail="Only admins can delete events")
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        db.close()
+        raise HTTPException(status_code=404, detail="Event not found")
+    db.delete(event)
+    db.commit()
+    db.close()
+    return {"message": "Event deleted"}
+
 @app.get("/events")
 def get_events():
     db = SessionLocal()

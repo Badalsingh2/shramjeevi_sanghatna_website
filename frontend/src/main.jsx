@@ -630,6 +630,18 @@ function EventStatusControls({ event, t, user, onEventsChanged }) {
         {isBrokenImage ? " ⚠️ Fix Image" : " Replace Image"}
         <input type="file" accept="image/*" style={{display:"none"}} onChange={fixImage}/>
       </label>
+      {/* Delete Event */}
+      <button className="btn-delete-event" onClick={async () => {
+        if (!confirm(`Delete "${event.title}"? This cannot be undone.`)) return;
+        try {
+          await axios.delete(`${API}/events/${event.id}`, { data: { admin_id: user.id } });
+          onEventsChanged();
+        } catch (err) {
+          alert("❌ Delete failed: " + (err?.response?.data?.detail || err.message));
+        }
+      }}>
+        🗑️ Delete Event
+      </button>
     </div>
   );
 }
@@ -1009,9 +1021,6 @@ function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChange
     <>
       <Header title={t.adminPanel} logout={logout} t={t} lang={lang} setLang={setLang} onOpenPasswordModal={onOpenPasswordModal}/>
       <section className="page">
-        {/* Marathi Names Manager */}
-        <MarathiNamesPanel user={user} districts={districts} onRefresh={loadAll}/>
-
         {/* Events management */}
         <div className="admin-event-grid">
           <EventForm user={user} t={t} onEventsChanged={onEventsChanged}/>
@@ -1116,7 +1125,7 @@ function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChange
                         <tr key={w.id}>
                           <td><button className="name-btn" onClick={() => openWorker(w.id)}>{getName(w, lang)}</button></td>
                           <td>{w.phone}</td>
-                          <td>{getDistrictName(w, lang)}</td>
+                          <td>{getName(selectedDistrict, lang)}</td>
                           <td>{perf?.reports || 0}</td>
                           <td>{perf?.people_reached || 0}</td>
                           <td><span className="score-badge">{perf?.score || 0}</span></td>
@@ -1198,8 +1207,26 @@ function AdminDashboard({ user, logout, t, lang, setLang, events, onEventsChange
             </div>
           </div>
         )}
+
+        {/* Marathi Names Manager — collapsible at bottom */}
+        <MarathiNamesToggle user={user} districts={districts} onRefresh={loadAll}/>
+
       </section>
     </>
+  );
+}
+
+// Collapsible wrapper for MarathiNamesPanel
+function MarathiNamesToggle({ user, districts, onRefresh }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="panel marathi-toggle-panel">
+      <button className="marathi-toggle-btn" onClick={() => setOpen(o => !o)}>
+        <span>🇮🇳 मराठी नावे बदला — Change Marathi Names of Employees</span>
+        <span className="toggle-arrow">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && <div style={{marginTop:"1.25rem"}}><MarathiNamesPanel user={user} districts={districts} onRefresh={onRefresh}/></div>}
+    </div>
   );
 }
 

@@ -1095,3 +1095,47 @@ td:last-child  { border-radius: 0 var(--r) var(--r) 0; }
   .marathi-panel-header { flex-direction: column; }
   .btn-save-all { width: 100%; }
 }
+
+/* ── Delete Event Button ──────────────────────────────────── */
+.btn-delete-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--r-pill, 999px);
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.35);
+  transition: background 0.2s, transform 0.15s;
+  width: fit-content;
+  margin-top: 0.2rem;
+}
+.btn-delete-event:hover {
+  background: rgba(239,68,68,0.25);
+  transform: translateY(-1px);
+}
+
+/* ── Marathi Toggle Panel ─────────────────────────────────── */
+.marathi-toggle-panel { padding: 0 !important; overflow: hidden; }
+.marathi-toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s;
+}
+.marathi-toggle-btn:hover { background: rgba(255,255,255,0.04); }
+.toggle-arrow { font-size: 0.75rem; color: var(--primary); margin-left: 0.5rem; }
+.marathi-toggle-panel > div { padding: 0 1.5rem 1.5rem; }
